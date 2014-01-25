@@ -5,16 +5,38 @@
     <property name="src" location="src"/>
     <property name="build" location="build"/>
     <property name="dist"  location="dist"/>
+    <property name="src.tests"  location="${build}"/>
+    <property name="reports.tests"  location="reports"/>
 
     <target name="init">
         <mkdir dir="${build}"/>
+        <mkdir dir="${reports.tests}"/>
     </target>
 
     <target name="compile" depends="init">
-        <javac srcdir="${src}" destdir="${build}"/>
+        <javac srcdir="${src}" destdir="${build}" classpath="lib/junit-4.11.jar"/>
     </target>
 
-    <target name="dist" depends="compile">
+    <target name="unit-tests" depends="compile">
+        <junit printsummary="yes" haltonfailure="yes" showoutput="true">
+            <classpath>
+                <pathelement location="lib/junit-4.11.jar"/>
+                <pathelement location="lib/hamcrest-core-1.3.jar"/>
+                <pathelement location="${build}"/>
+                <pathelement location="${src}"/>
+            </classpath>
+
+            <formatter type="xml"/>
+
+            <batchtest fork="yes" todir="${reports.tests}">
+                <fileset dir="${src.tests}">
+                    <include name="**/*Test.class"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+
+    <target name="dist" depends="unit-tests">
         <mkdir dir="${dist}/lib"/>
 
         <jar jarfile="${dist}/lib/ant-ci-example.jar" basedir="${build}"/>
@@ -23,5 +45,6 @@
     <target name="clean">
         <delete dir="${build}"/>
         <delete dir="${dist}"/>
+        <delete dir="${reports.tests}"/>
     </target>
 </project>
